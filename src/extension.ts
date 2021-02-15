@@ -1,27 +1,46 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import { commands, ExtensionContext, window, workspace } from 'vscode';
+import Provider from './data/Provider';
+import Handler from './data/Handler';
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "fund" is now active!');
+// 插件被激活时触发，所有代码的入口, context 为插件上下文
+export function activate(context: ExtensionContext) {
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('fund.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
+	console.log('Congratulations, your extension "fund-watch" is now active!');
+	let refreshTime = Handler.getRefreshTime();
+	if (refreshTime < 5) { 
+		refreshTime = 5;
+	}
 
-		// Display a message box to the user
-		vscode.window.showInformationMessage('Hello World from 果子哥!');
-	});
-
-	context.subscriptions.push(disposable);
+	// 基金类
+	const fundProvider = new Provider();
+	
+	// 数据注册
+	window.registerTreeDataProvider('fund-list', fundProvider);
+	
+	// 定时任务
+  setInterval(() => {
+    fundProvider.refresh();
+	}, refreshTime * 1000);
+	
+	  // menu 事件
+		context.subscriptions.push(
+			commands.registerCommand(`fund.add`, () => {
+				fundProvider.addFund();
+			}),
+			commands.registerCommand(`fund.order`, () => {
+				fundProvider.changeOrder();
+			}),
+			commands.registerCommand(`fund.refresh`, () => {
+				fundProvider.refresh();
+			}),
+			commands.registerCommand('fund.item.remove', (fund) => {
+				const { code } = fund;
+				Handler.removeConfig(code);
+				fundProvider.refresh();
+			})
+		);
 }
 
-// this method is called when your extension is deactivated
+//  插件被释放时触发
 export function deactivate() {}
