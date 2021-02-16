@@ -3,7 +3,7 @@
 		"displayName": "果子哥",
 		"description": "实时查看基金/股票行情",
 		"version": "0.0.1",
-		"publisher":"gpxiao118",
+		"publisher":"xiaoguoping",
 		"engines": {
 				"vscode": "^1.53.0"
 		},
